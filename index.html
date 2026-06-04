@@ -94,6 +94,31 @@
   let currentEmail = '';
   let pollTimer = null;
 
+  // 從 OTP 信件連結進來（?e=email）→ 自動跳到正確步驟
+  window.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(location.search);
+    const emailFromLink = params.get('e');
+    if (!emailFromLink) return;
+
+    currentEmail = emailFromLink.toLowerCase();
+    try {
+      const res = await fetch(`${WORKER}/status?e=${encodeURIComponent(currentEmail)}`);
+      const data = await res.json();
+      if (data.status === 'approved') {
+        // 直接顯示 OTP 輸入框
+        document.getElementById('step-email').style.display = 'none';
+        document.getElementById('step-otp').style.display = 'block';
+        document.getElementById('otp-input').focus();
+      } else if (data.status === 'pending') {
+        // 顯示等待畫面並繼續 polling
+        document.getElementById('waiting-email').textContent = currentEmail;
+        document.getElementById('step-email').style.display = 'none';
+        document.getElementById('step-waiting').style.display = 'block';
+        startPolling();
+      }
+    } catch { /* 網路問題，保持預設畫面 */ }
+  });
+
   function setErr(id, msg) {
     const el = document.getElementById(id);
     el.textContent = msg;
