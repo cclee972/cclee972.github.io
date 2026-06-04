@@ -4,133 +4,222 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CC Lee — 請先登入</title>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; font-family: "Plus Jakarta Sans", system-ui, sans-serif; background: #0b0c1e; color: #f1f5f9; }
-
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; font-family:"Plus Jakarta Sans",system-ui,sans-serif; background:#0b0c1e; color:#f1f5f9; }
     body::before {
-      content: ""; position: fixed; inset: 0; z-index: 0;
+      content:""; position:fixed; inset:0; z-index:0;
       background:
         radial-gradient(ellipse 60% 60% at 20% 30%, rgba(108,99,255,.2), transparent 60%),
         radial-gradient(ellipse 50% 50% at 80% 70%, rgba(6,182,212,.15), transparent 60%);
-      pointer-events: none;
+      pointer-events:none;
     }
-
-    .page {
-      min-height: 100vh; display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      padding: 24px; position: relative; z-index: 1;
+    .page { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; position:relative; z-index:1; }
+    .logo { font-size:1.6rem; font-weight:800; letter-spacing:-.03em; margin-bottom:40px; color:#fff; }
+    .logo span { color:#6c63ff; }
+    .card { width:100%; max-width:420px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); border-radius:24px; padding:40px 36px; backdrop-filter:blur(16px); box-shadow:0 24px 60px rgba(0,0,0,.4); }
+    .card-title { font-size:1.4rem; font-weight:700; margin-bottom:6px; }
+    .card-sub { color:rgba(255,255,255,.45); font-size:.9rem; margin-bottom:32px; }
+    label { display:block; font-size:.82rem; font-weight:600; color:rgba(255,255,255,.6); margin-bottom:8px; letter-spacing:.04em; }
+    .input-wrap { margin-bottom:20px; }
+    input[type="email"], input[type="text"] {
+      width:100%; padding:13px 16px; border-radius:12px;
+      background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.12);
+      color:#fff; font:inherit; font-size:.98rem; outline:none;
+      transition:border-color .2s, box-shadow .2s;
     }
-
-    .logo { font-size: 1.6rem; font-weight: 800; letter-spacing: -.03em; margin-bottom: 40px; color: #fff; }
-    .logo span { color: #6c63ff; }
-
-    .card {
-      width: 100%; max-width: 400px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.1);
-      border-radius: 24px; padding: 40px 36px;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 24px 60px rgba(0,0,0,.4);
-    }
-    .card-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 6px; }
-    .card-sub { color: rgba(255,255,255,.45); font-size: .9rem; margin-bottom: 32px; }
-
-    label { display: block; font-size: .82rem; font-weight: 600; color: rgba(255,255,255,.6); margin-bottom: 8px; letter-spacing: .04em; }
-
-    .input-wrap { position: relative; margin-bottom: 20px; }
-    input[type="password"], input[type="text"] {
-      width: 100%; padding: 13px 48px 13px 16px; border-radius: 12px;
-      background: rgba(255,255,255,.06); border: 1.5px solid rgba(255,255,255,.12);
-      color: #fff; font: inherit; font-size: .98rem; outline: none;
-      transition: border-color .2s, box-shadow .2s;
-    }
-    input::placeholder { color: rgba(255,255,255,.25); }
-    input:focus { border-color: #6c63ff; box-shadow: 0 0 0 3px rgba(108,99,255,.2); }
-
-    .toggle-pw {
-      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-      background: none; border: none; cursor: pointer;
-      color: rgba(255,255,255,.4); font-size: 1rem; transition: color .2s; padding: 4px;
-    }
-    .toggle-pw:hover { color: rgba(255,255,255,.8); }
-
-    .error {
-      display: none; background: rgba(239,68,68,.12);
-      border: 1px solid rgba(239,68,68,.3); color: #fca5a5;
-      border-radius: 10px; padding: 11px 14px;
-      font-size: .86rem; margin-bottom: 20px;
-    }
-    .error.show { display: block; }
-
-    .btn-login {
-      width: 100%; padding: 14px; border-radius: 12px; border: none; cursor: pointer;
-      font: inherit; font-size: .98rem; font-weight: 700;
-      background: linear-gradient(135deg, #6c63ff, #06b6d4); color: #fff;
-      box-shadow: 0 6px 24px rgba(108,99,255,.45);
-      transition: transform .2s, box-shadow .2s, opacity .2s;
-    }
-    .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(108,99,255,.55); }
-    .btn-login:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
-    .footer-note { margin-top: 32px; color: rgba(255,255,255,.2); font-size: .78rem; text-align: center; }
+    input::placeholder { color:rgba(255,255,255,.25); }
+    input:focus { border-color:#6c63ff; box-shadow:0 0 0 3px rgba(108,99,255,.2); }
+    .error { display:none; background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3); color:#fca5a5; border-radius:10px; padding:11px 14px; font-size:.86rem; margin-bottom:20px; }
+    .error.show { display:block; }
+    .info { display:none; background:rgba(6,182,212,.1); border:1px solid rgba(6,182,212,.3); color:#67e8f9; border-radius:10px; padding:11px 14px; font-size:.86rem; margin-bottom:20px; }
+    .info.show { display:block; }
+    .btn { width:100%; padding:14px; border-radius:12px; border:none; cursor:pointer; font:inherit; font-size:.98rem; font-weight:700; background:linear-gradient(135deg,#6c63ff,#06b6d4); color:#fff; box-shadow:0 6px 24px rgba(108,99,255,.45); transition:transform .2s, box-shadow .2s, opacity .2s; }
+    .btn:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(108,99,255,.55); }
+    .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+    .back-link { display:block; text-align:center; margin-top:16px; color:rgba(255,255,255,.4); font-size:.85rem; cursor:pointer; }
+    .back-link:hover { color:rgba(255,255,255,.7); }
+    .footer-note { margin-top:32px; color:rgba(255,255,255,.2); font-size:.78rem; text-align:center; }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="logo">CC<span>.</span></div>
+<div class="page">
+  <div class="logo">CC<span>.</span></div>
 
-    <div class="card">
-      <div class="card-title">歡迎 👋</div>
-      <div class="card-sub">請輸入密碼以瀏覽作品集</div>
-
-      <form id="login-form" autocomplete="off" novalidate>
-        <label for="pw">密碼</label>
-        <div class="input-wrap">
-          <input type="password" id="pw" placeholder="輸入密碼…" autofocus />
-          <button type="button" class="toggle-pw" id="toggle-pw" aria-label="顯示/隱藏密碼">👁</button>
-        </div>
-        <div class="error" id="error-msg">密碼錯誤，請再試一次。</div>
-        <button type="submit" class="btn-login" id="login-btn">進入作品集</button>
-      </form>
+  <!-- Step 1: Email 輸入 -->
+  <div class="card" id="step-email">
+    <div class="card-title">歡迎 👋</div>
+    <div class="card-sub">請輸入你的 Email，我們將寄送驗證碼給你</div>
+    <div class="input-wrap">
+      <label for="email-input">Email</label>
+      <input type="email" id="email-input" placeholder="your@email.com" autofocus />
     </div>
-
-    <p class="footer-note">© 2026 CC Lee · 僅供受邀者瀏覽</p>
+    <div class="error" id="email-error"></div>
+    <button class="btn" id="send-btn" onclick="sendOTP()">寄送驗證碼</button>
   </div>
 
-  <script>
-    const HASH = '6d9a4aa71931b78d95eced48f89572a9a3e8f83b8b0a62ca77dd7efce498efaf';
+  <!-- Step 2: OTP 輸入 -->
+  <div class="card" id="step-otp" style="display:none">
+    <div class="card-title">輸入驗證碼 ✉️</div>
+    <div class="card-sub" id="otp-sub">驗證碼已寄送，請查看你的信箱</div>
+    <div class="info show" id="otp-info">驗證碼 10 分鐘內有效</div>
+    <div class="input-wrap">
+      <label for="otp-input">6 位數驗證碼</label>
+      <input type="text" id="otp-input" placeholder="000000" maxlength="6" autocomplete="one-time-code" autofocus />
+    </div>
+    <div class="error" id="otp-error"></div>
+    <button class="btn" id="verify-btn" onclick="verifyOTP()">驗證並進入</button>
+    <span class="back-link" onclick="goBack()">← 重新輸入 Email</span>
+  </div>
 
-    if (sessionStorage.getItem('cc_auth') === 'ok') {
-      window.location.replace('./portfolio.html');
+  <p class="footer-note">© 2026 CC Lee · 僅供受邀者瀏覽</p>
+</div>
+
+<script>
+  // ── 設定 ──────────────────────────────────────
+  const WORKER      = 'https://portfolio-auth.cc-lee972.workers.dev';
+  const EMAILJS_KEY = 'dv9nbeUX-hSd0zsIV';
+  const SERVICE_ID  = 'portfolio_otp';
+  const TEMPLATE_ID = 'template_fozs3ag';
+  const OTP_MINUTES = 10;
+
+  emailjs.init(EMAILJS_KEY);
+
+  // 已登入直接進入
+  if (sessionStorage.getItem('cc_auth') === 'ok') {
+    window.location.replace('./portfolio.html');
+  }
+
+  let currentEmail = '';
+  let otpHash = '';
+  let otpExpiry = 0;
+
+  function setErr(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.classList.toggle('show', !!msg);
+  }
+
+  function setBtn(id, text, disabled) {
+    const btn = document.getElementById(id);
+    btn.textContent = text;
+    btn.disabled = disabled;
+  }
+
+  // SHA-256 雜湊
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+
+  // 產生 6 位數驗證碼
+  function genOTP() {
+    return String(Math.floor(100000 + Math.random() * 900000));
+  }
+
+  // Step 1: 寄送 OTP
+  async function sendOTP() {
+    const email = document.getElementById('email-input').value.trim().toLowerCase();
+    setErr('email-error', '');
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email)) {
+      setErr('email-error', '請輸入有效的 Email 地址。');
+      return;
     }
 
-    const pwInput = document.getElementById('pw');
-    document.getElementById('toggle-pw').addEventListener('click', () => {
-      pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
-    });
+    setBtn('send-btn', '確認中…', true);
 
-    document.getElementById('login-form').addEventListener('submit', async e => {
-      e.preventDefault();
-      const pw = pwInput.value;
-      const btn = document.getElementById('login-btn');
-      const errEl = document.getElementById('error-msg');
-      if (!pw) return;
-      btn.disabled = true; btn.textContent = '驗證中…'; errEl.classList.remove('show');
-      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
-      const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-      if (hex === HASH) {
-        sessionStorage.setItem('cc_auth', 'ok');
-        window.location.replace('./portfolio.html');
-      } else {
-        errEl.classList.add('show');
-        pwInput.value = ''; pwInput.focus();
-        btn.disabled = false; btn.textContent = '進入作品集';
+    // 向 Worker 確認 Email 是否在允許名單
+    try {
+      const res = await fetch(`${WORKER}/check?e=${encodeURIComponent(email)}`);
+      const data = await res.json();
+      if (!data.ok) {
+        setErr('email-error', '此 Email 不在受邀名單中，請聯絡 CC Lee。');
+        setBtn('send-btn', '寄送驗證碼', false);
+        return;
       }
-    });
-  </script>
+    } catch (e) {
+      setErr('email-error', '網路錯誤，請稍後再試。');
+      setBtn('send-btn', '寄送驗證碼', false);
+      return;
+    }
+
+    // 產生 OTP 並雜湊儲存
+    const otp = genOTP();
+    otpHash = await sha256(otp);
+    otpExpiry = Date.now() + OTP_MINUTES * 60 * 1000;
+    currentEmail = email;
+
+    // 用 EmailJS 寄出驗證碼
+    try {
+      setBtn('send-btn', '寄送中…', true);
+      await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
+        to_email: email,
+        passcode: otp,
+        time: `${OTP_MINUTES} 分鐘`
+      });
+    } catch (e) {
+      setErr('email-error', '驗證碼寄送失敗，請再試一次。');
+      setBtn('send-btn', '寄送驗證碼', false);
+      return;
+    }
+
+    // 切換到 OTP 輸入畫面
+    document.getElementById('otp-sub').textContent = `驗證碼已寄至 ${email}`;
+    document.getElementById('step-email').style.display = 'none';
+    document.getElementById('step-otp').style.display = 'block';
+    document.getElementById('otp-input').focus();
+    setBtn('send-btn', '寄送驗證碼', false);
+  }
+
+  // Step 2: 驗證 OTP
+  async function verifyOTP() {
+    const input = document.getElementById('otp-input').value.trim();
+    setErr('otp-error', '');
+
+    if (!input || input.length !== 6) {
+      setErr('otp-error', '請輸入 6 位數驗證碼。');
+      return;
+    }
+
+    if (Date.now() > otpExpiry) {
+      setErr('otp-error', '驗證碼已過期，請重新取得。');
+      return;
+    }
+
+    setBtn('verify-btn', '驗證中…', true);
+    const inputHash = await sha256(input);
+
+    if (inputHash === otpHash) {
+      sessionStorage.setItem('cc_auth', 'ok');
+      window.location.replace('./portfolio.html');
+    } else {
+      setErr('otp-error', '驗證碼錯誤，請再試一次。');
+      setBtn('verify-btn', '驗證並進入', false);
+    }
+  }
+
+  // 回到 Email 輸入
+  function goBack() {
+    document.getElementById('step-otp').style.display = 'none';
+    document.getElementById('step-email').style.display = 'block';
+    document.getElementById('otp-input').value = '';
+    setErr('otp-error', '');
+    document.getElementById('email-input').focus();
+  }
+
+  // Enter 鍵快捷
+  document.getElementById('email-input').addEventListener('keydown', e => { if (e.key === 'Enter') sendOTP(); });
+  document.getElementById('otp-input').addEventListener('keydown', e => { if (e.key === 'Enter') verifyOTP(); });
+
+  // 只允許數字輸入
+  document.getElementById('otp-input').addEventListener('input', e => {
+    e.target.value = e.target.value.replace(/\D/g, '');
+  });
+</script>
 </body>
 </html>

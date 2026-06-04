@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>管理後台</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #333; padding: 24px; }
+    h1 { font-size: 1.4rem; margin-bottom: 20px; }
+    h2 { font-size: 1rem; margin-bottom: 12px; color: #555; }
+    .card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+    input[type="text"], input[type="email"], input[type="password"] {
+      width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px;
+      font: inherit; font-size: .95rem; margin-bottom: 10px;
+    }
+    button {
+      padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer;
+      font: inherit; font-size: .9rem;
+    }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-danger { background: #dc2626; color: #fff; font-size: .8rem; padding: 4px 10px; }
+    .btn-danger:hover { background: #b91c1c; }
+    .msg { padding: 8px 12px; border-radius: 6px; margin-top: 10px; font-size: .9rem; display: none; }
+    .msg.ok { background: #d1fae5; color: #065f46; display: block; }
+    .msg.err { background: #fee2e2; color: #991b1b; display: block; }
+    #email-list { list-style: none; }
+    #email-list li {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: .95rem;
+    }
+    #email-list li:last-child { border-bottom: none; }
+    .empty { color: #999; font-size: .9rem; }
+    #login-section { max-width: 400px; margin: 60px auto; }
+  </style>
+</head>
+<body>
+
+<!-- 登入區 -->
+<div id="login-section" class="card">
+  <h1>🔐 管理後台</h1>
+  <h2>請輸入管理員密鑰</h2>
+  <input type="password" id="key-input" placeholder="管理員密鑰" />
+  <button class="btn-primary" onclick="doLogin()">登入</button>
+  <div class="msg" id="login-msg"></div>
+</div>
+
+<!-- 管理區（登入後顯示）-->
+<div id="admin-section" style="display:none; max-width:600px; margin:0 auto;">
+  <h1>📋 Email 名單管理</h1>
+  <p style="color:#666; margin-bottom:20px; font-size:.9rem;">在這裡新增或刪除可以進入作品集的 Email。</p>
+
+  <!-- 新增 Email -->
+  <div class="card">
+    <h2>新增允許的 Email</h2>
+    <input type="email" id="new-email" placeholder="client@example.com" />
+    <button class="btn-primary" onclick="addEmail()">新增</button>
+    <div class="msg" id="add-msg"></div>
+  </div>
+
+  <!-- Email 清單 -->
+  <div class="card">
+    <h2>目前允許的 Email 清單</h2>
+    <ul id="email-list"><li class="empty">載入中…</li></ul>
+  </div>
+</div>
+
+<script>
+  const WORKER = 'https://portfolio-auth.cc-lee972.workers.dev';
+  let adminKey = '';
+
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = 'msg ' + type;
+  }
+
+  async function doLogin() {
+    const key = document.getElementById('key-input').value.trim();
+    if (!key) return;
+
+    // 驗證密鑰
+    const res = await fetch(`${WORKER}/admin/list`, {
+      headers: { 'X-Admin-Key': key }
+    });
+
+    if (res.ok) {
+      adminKey = key;
+      document.getElementById('login-section').style.display = 'none';
+      document.getElementById('admin-section').style.display = 'block';
+      loadEmails();
+    } else {
+      showMsg('login-msg', '密鑰錯誤，請再試一次。', 'err');
+    }
+  }
+
+  async function loadEmails() {
+    const res = await fetch(`${WORKER}/admin/list`, {
+      headers: { 'X-Admin-Key': adminKey }
+    });
+    const emails = await res.json();
+    const list = document.getElementById('email-list');
+
+    if (!emails.length) {
+      list.innerHTML = '<li class="empty">目前沒有任何允許的 Email。</li>';
+      return;
+    }
+
+    list.innerHTML = emails.map(e => `
+      <li>
+        <span>${e}</span>
+        <button class="btn-danger" onclick="removeEmail('${e}')">刪除</button>
+      </li>
+    `).join('');
+  }
+
+  async function addEmail() {
+    const email = document.getElementById('new-email').value.trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+      showMsg('add-msg', '請輸入有效的 Email。', 'err');
+      return;
+    }
+
+    const res = await fetch(`${WORKER}/admin/add`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ email })
+    });
+
+    if (res.ok) {
+      document.getElementById('new-email').value = '';
+      showMsg('add-msg', `✅ ${email} 已新增！`, 'ok');
+      loadEmails();
+    } else {
+      showMsg('add-msg', '新增失敗，請再試一次。', 'err');
+    }
+  }
+
+  async function removeEmail(email) {
+    if (!confirm(`確定要刪除 ${email} 嗎？`)) return;
+
+    const res = await fetch(`${WORKER}/admin/remove`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ email })
+    });
+
+    if (res.ok) {
+      loadEmails();
+    } else {
+      alert('刪除失敗，請再試一次。');
+    }
+  }
+
+  // Enter 鍵登入
+  document.getElementById('key-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  document.getElementById('new-email')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') addEmail();
+  });
+</script>
+</body>
+</html>
