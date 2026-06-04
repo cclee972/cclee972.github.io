@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <script>
+    // 驗證登入狀態，未登入踢回首頁
+    if (sessionStorage.getItem('cc_auth') !== 'ok') {
+      window.location.replace('./index.html');
+    }
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CC Lee — Portfolio</title>
+  <meta name="description" content="CC Lee 的個人作品集 — UI/UX 設計與前端開發。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/line-awesome/1.3.0/line-awesome/css/line-awesome.min.css" />
+  <style>
+    :root {
+      --dark:   #0b0c1e;
+      --dark2:  #12142a;
+      --purple: #6c63ff;
+      --purple2:#8b5cf6;
+      --cyan:   #06b6d4;
+      --text:   #1a1a2e;
+      --muted:  #64748b;
+      --light:  #f8fafc;
+      --white:  #ffffff;
+      --grad:   linear-gradient(135deg, var(--purple), var(--cyan));
+      --card-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      --radius: 16px;
+      --maxw:   1100px;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      font-family: "Plus Jakarta Sans", "Noto Sans TC", system-ui, sans-serif;
+      color: var(--text);
+      background: var(--white);
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+    a { color:inherit; text-decoration:none; }
+    .wrap { max-width:var(--maxw); margin:0 auto; padding:0 24px; }
+    .grad-text {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    /* ── NAV ── */
+    header {
+      position: fixed; top:0; left:0; right:0; z-index:100;
+      padding: 20px 0;
+      transition: background .3s, box-shadow .3s;
+    }
+    header.scrolled {
+      background: rgba(11,12,30,.92);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 1px 0 rgba(255,255,255,.08);
+    }
+    nav { display:flex; align-items:center; justify-content:space-between; }
+    .logo {
+      font-size:1.4rem; font-weight:800; color:var(--white);
+      letter-spacing:-.02em;
+    }
+    .logo span { color: var(--purple); }
+    .nav-links { display:flex; gap:32px; }
+    .nav-links a { color:rgba(255,255,255,.7); font-size:.95rem; font-weight:500; transition:color .2s; }
+    .nav-links a:hover { color:var(--white); }
+    .nav-cta {
+      padding:10px 22px; border-radius:999px; font-weight:600; font-size:.9rem;
+      background: var(--grad); color:var(--white);
+      box-shadow: 0 4px 20px rgba(108,99,255,.4);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .nav-cta:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(108,99,255,.5); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      background: var(--dark);
+      display: flex; align-items: center;
+      position: relative; overflow: hidden;
+      padding-top: 80px;
+    }
+    .hero::before {
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(ellipse 60% 60% at 70% 50%, rgba(108,99,255,.18), transparent),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(6,182,212,.12), transparent);
+    }
+    .hero-inner {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:60px; align-items:center;
+      position:relative; z-index:1;
+    }
+    .hero-tag {
+      display:inline-block; padding:6px 16px; border-radius:999px;
+      border:1px solid rgba(108,99,255,.4); color:var(--purple);
+      font-size:.85rem; font-weight:600; margin-bottom:20px;
+      background: rgba(108,99,255,.1);
+    }
+    .hero h1 {
+      font-size: clamp(2.6rem, 5vw, 4rem);
+      font-weight:800; color:var(--white);
+      line-height:1.1; letter-spacing:-.03em;
+      margin-bottom:20px;
+    }
+    .hero-sub {
+      color:rgba(255,255,255,.6); font-size:1.1rem;
+      max-width:480px; margin-bottom:36px;
+    }
+    .hero-btns { display:flex; gap:14px; flex-wrap:wrap; }
+    .btn-primary {
+      padding:14px 28px; border-radius:999px; font-weight:700;
+      background: var(--grad); color:var(--white); border:none; cursor:pointer;
+      box-shadow: 0 6px 24px rgba(108,99,255,.45);
+      transition: transform .2s, box-shadow .2s; font-size:.98rem;
+    }
+    .btn-primary:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(108,99,255,.55); }
+    .btn-outline {
+      padding:14px 28px; border-radius:999px; font-weight:600;
+      background:transparent; color:var(--white); cursor:pointer; font-size:.98rem;
+      border:1.5px solid rgba(255,255,255,.25);
+      transition: border-color .2s, background .2s;
+    }
+    .btn-outline:hover { border-color:rgba(255,255,255,.6); background:rgba(255,255,255,.06); }
+    .hero-socials { display:flex; gap:14px; margin-top:32px; }
+    .hero-socials a {
+      width:40px; height:40px; border-radius:50%;
+      border:1px solid rgba(255,255,255,.15);
+      display:flex; align-items:center; justify-content:center;
+      color:rgba(255,255,255,.6); font-size:.95rem;
+      transition:all .2s;
+    }
+    .hero-socials a:hover { border-color:var(--purple); color:var(--white); background:rgba(108,99,255,.2); }
+
+    /* photo */
+    .hero-photo-wrap {
+      display:flex; justify-content:center; align-items:center;
+      position:relative;
+    }
+    .hero-photo-blob {
+      width:380px; height:380px; border-radius:60% 40% 55% 45% / 50% 60% 40% 50%;
+      background: var(--grad); padding:5px;
+      animation: morph 8s ease-in-out infinite;
+      box-shadow: 0 20px 60px rgba(108,99,255,.5);
+    }
+    .hero-photo-inner {
+      width:100%; height:100%; border-radius:inherit;
+      overflow:hidden; background:var(--dark2);
+    }
+    .hero-photo-inner img {
+      width:100%; height:100%; object-fit:cover; object-position:top center;
+    }
+    @keyframes morph {
+      0%,100%{ border-radius:60% 40% 55% 45%/50% 60% 40% 50%; }
+      33%    { border-radius:40% 60% 45% 55%/60% 40% 60% 40%; }
+      66%    { border-radius:55% 45% 60% 40%/40% 55% 45% 60%; }
+    }
+
+    /* floating cards */
+    .float-card {
+      position:absolute; background:rgba(255,255,255,.06);
+      backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.12);
+      border-radius:12px; padding:12px 16px; color:var(--white);
+      font-size:.82rem; font-weight:600; white-space:nowrap;
+    }
+    .float-card.top { top:10%; right:-20px; }
+    .float-card.bot { bottom:12%; left:-30px; }
+    .float-card .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:#22d3ee; margin-right:6px; }
+
+    /* ── SKILLS ── */
+    .skills-section { padding:80px 0; background:var(--light); }
+    .section-kicker { font-size:.8rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--purple); margin-bottom:10px; }
+    .section-title { font-size:clamp(1.8rem,3.5vw,2.4rem); font-weight:800; letter-spacing:-.02em; color:var(--text); margin-bottom:14px; }
+    .section-sub { color:var(--muted); font-size:1rem; max-width:540px; }
+    .skills-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:16px; margin-top:48px; }
+    .skill-chip {
+      background:var(--white); border-radius:14px; padding:20px 16px;
+      text-align:center; box-shadow:var(--card-shadow);
+      border:1px solid #e2e8f0; transition:transform .2s, box-shadow .2s;
+    }
+    .skill-chip:hover { transform:translateY(-4px); box-shadow:0 8px 32px rgba(108,99,255,.12); border-color:rgba(108,99,255,.25); }
+    .skill-chip .icon {
+      font-size: 2rem; margin-bottom: 10px; display: block; line-height: 1;
+    }
+    .skill-chip .icon::before {
+      background: linear-gradient(135deg, var(--purple), var(--cyan));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .skill-chip span { font-size:.85rem; font-weight:600; color:var(--text); }
+
+    /* ── ABOUT ── */
+    .about-section { padding:100px 0; }
+    .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; }
+    .about-img-wrap { position:relative; }
+    .about-img {
+      width:100%; border-radius:24px; overflow:hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,.12);
+      aspect-ratio: 3/4;
+    }
+    .about-img img { width:100%; height:100%; object-fit:cover; object-position:top; }
+    .about-badge {
+      position:absolute; bottom:-20px; right:-20px;
+      background:var(--white); border-radius:16px; padding:16px 20px;
+      box-shadow:0 8px 32px rgba(0,0,0,.12); text-align:center;
+    }
+    .about-badge .num { font-size:1.8rem; font-weight:800; color:var(--purple); display:block; }
+    .about-badge .lbl { font-size:.78rem; color:var(--muted); font-weight:500; }
+    .about-content h2 { font-size:clamp(2rem,3.5vw,2.8rem); font-weight:800; letter-spacing:-.03em; margin-bottom:20px; }
+    .about-content p { color:var(--muted); margin-bottom:16px; line-height:1.8; }
+    .about-tags { display:flex; flex-wrap:wrap; gap:10px; margin-top:28px; }
+    .about-tag {
+      padding:8px 18px; border-radius:999px; font-size:.85rem; font-weight:600;
+      background:linear-gradient(135deg,rgba(108,99,255,.1),rgba(6,182,212,.1));
+      color:var(--purple); border:1px solid rgba(108,99,255,.2);
+    }
+
+    /* ── PORTFOLIO ── */
+    .portfolio-section { padding:100px 0; background:var(--light); }
+    .section-head { margin-bottom:56px; }
+    .portfolio-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:28px; }
+    .project-card {
+      background:var(--white); border-radius:20px; overflow:hidden;
+      box-shadow:var(--card-shadow); border:1px solid #e2e8f0;
+      transition:transform .25s, box-shadow .25s;
+    }
+    .project-card:hover { transform:translateY(-8px); box-shadow:0 16px 48px rgba(0,0,0,.12); }
+    .card-thumb {
+      height:200px; position:relative;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .card-thumb-num {
+      font-size:5rem; font-weight:800; opacity:.12; color:var(--white);
+    }
+    .card-body { padding:24px; }
+    .card-tag {
+      display:inline-block; padding:4px 12px; border-radius:999px;
+      font-size:.75rem; font-weight:700; margin-bottom:12px;
+      background:rgba(108,99,255,.1); color:var(--purple);
+    }
+    .card-title { font-size:1.15rem; font-weight:700; margin-bottom:8px; }
+    .card-desc { color:var(--muted); font-size:.92rem; line-height:1.7; }
+
+    /* ── CTA ── */
+    .cta-section {
+      padding:100px 0;
+      background: var(--dark);
+      position:relative; overflow:hidden;
+      text-align:center;
+    }
+    .cta-section::before {
+      content:"";
+      position:absolute; inset:0;
+      background:
+        radial-gradient(ellipse 70% 70% at 50% 50%, rgba(108,99,255,.25), transparent 70%),
+        radial-gradient(ellipse 40% 40% at 20% 20%, rgba(6,182,212,.12), transparent);
+    }
+    .cta-section .wrap { position:relative; z-index:1; }
+    .cta-section h2 { font-size:clamp(2.2rem,4.5vw,3.4rem); font-weight:800; color:var(--white); margin-bottom:16px; letter-spacing:-.03em; }
+    .cta-section p { color:rgba(255,255,255,.6); font-size:1.1rem; max-width:500px; margin:0 auto 36px; }
+
+    /* ── CONTACT FORM ── */
+    .contact-section { padding:100px 0; }
+    .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:start; }
+    .contact-info h2 { font-size:clamp(2rem,3.5vw,2.8rem); font-weight:800; letter-spacing:-.03em; margin-bottom:16px; }
+    .contact-info p { color:var(--muted); margin-bottom:32px; line-height:1.8; }
+    .contact-detail { display:flex; gap:12px; align-items:center; margin-bottom:16px; }
+    .contact-detail .icon { width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg,rgba(108,99,255,.15),rgba(6,182,212,.15)); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+    .contact-detail .txt { font-size:.92rem; color:var(--muted); }
+    .contact-detail .txt strong { display:block; color:var(--text); font-weight:600; margin-bottom:2px; }
+
+    /* form styles */
+    .contact-form { display:grid; gap:18px; }
+    .field { display:grid; gap:7px; }
+    .field label { font-size:.85rem; font-weight:600; color:var(--text); }
+    .contact-form input,
+    .contact-form select,
+    .contact-form textarea {
+      width:100%; padding:13px 16px; border-radius:12px;
+      border:1.5px solid #e2e8f0; background:var(--light);
+      color:var(--text); font:inherit; font-size:.95rem;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .contact-form input::placeholder,
+    .contact-form textarea::placeholder { color:#94a3b8; }
+    .contact-form select { -webkit-appearance:none; appearance:none; cursor:pointer;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:right 14px center; padding-right:40px;
+    }
+    .contact-form select:invalid { color:#94a3b8; }
+    .contact-form textarea { resize:vertical; min-height:130px; }
+    .contact-form input:focus,
+    .contact-form select:focus,
+    .contact-form textarea:focus {
+      outline:none; border-color:var(--purple);
+      box-shadow:0 0 0 3px rgba(108,99,255,.15); background:var(--white);
+    }
+    .field.hidden { display:none; }
+    .form-status { min-height:22px; font-size:.9rem; }
+    .form-status.ok { color:#10b981; }
+    .form-status.err { color:#ef4444; }
+
+    /* ── FOOTER ── */
+    footer {
+      background:var(--dark); padding:48px 0 32px;
+      border-top:1px solid rgba(255,255,255,.06);
+    }
+    .footer-inner { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:20px; }
+    .footer-logo { font-size:1.2rem; font-weight:800; color:var(--white); }
+    .footer-logo span { color:var(--purple); }
+    .footer-links { display:flex; gap:28px; }
+    .footer-links a { color:rgba(255,255,255,.5); font-size:.9rem; transition:color .2s; }
+    .footer-links a:hover { color:var(--white); }
+    .footer-copy { color:rgba(255,255,255,.3); font-size:.85rem; margin-top:28px; }
+
+    /* ── REVEAL ── */
+    .reveal { opacity:0; transform:translateY(28px); transition:opacity .6s ease, transform .6s ease; }
+    .reveal.in { opacity:1; transform:none; }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:800px) {
+      .hero-inner { grid-template-columns:1fr; text-align:center; }
+      .hero-photo-wrap { display:none; }
+      .hero-btns { justify-content:center; }
+      .hero-socials { justify-content:center; }
+      .about-grid, .contact-grid { grid-template-columns:1fr; gap:40px; }
+      .about-badge { display:none; }
+      .nav-links, .nav-cta { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<header id="site-header">
+  <nav class="wrap">
+    <div class="logo">CC<span>.</span></div>
+    <div class="nav-links">
+      <a href="#about">關於</a>
+      <a href="#portfolio">作品</a>
+      <a href="#contact">聯絡</a>
+    </div>
+    <a href="#contact" class="nav-cta">合作洽談</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap hero-inner">
+    <div class="hero-left">
+      <span class="hero-tag">👋 嗨，我是 CC Lee</span>
+      <h1>UI/UX 設計師<br /><span class="grad-text">& 前端開發者</span></h1>
+      <p class="hero-sub">把想法變成清晰、優雅、能用的數位產品。從原型、視覺到上線，一條龍服務。</p>
+      <div class="hero-btns">
+        <a href="#portfolio" class="btn-primary">看我的作品</a>
+        <a href="#contact" class="btn-outline">與我聯絡</a>
+      </div>
+      <div class="hero-socials">
+        <a href="https://github.com/cclee972" target="_blank" rel="noopener" title="GitHub">⌥</a>
+        <a href="mailto:cc.lee972@gmail.com" title="Email">✉</a>
+      </div>
+    </div>
+
+    <div class="hero-photo-wrap">
+      <div class="hero-photo-blob">
+        <div class="hero-photo-inner">
+          <img src="assets/me.jpg" alt="CC Lee" />
+        </div>
+      </div>
+      <div class="float-card top"><span class="dot"></span>開放接案中</div>
+      <div class="float-card bot">✦ 設計 × 開發</div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section class="skills-section" id="skills">
+  <div class="wrap reveal">
+    <div class="section-kicker">What I Do</div>
+    <h2 class="section-title">專業技能</h2>
+    <p class="section-sub">橫跨設計與技術，把視覺美感與工程思維結合在一起。</p>
+    <div class="skills-grid">
+      <div class="skill-chip"><i class="icon la la-pencil-ruler"></i><span>UI/UX 設計</span></div>
+      <div class="skill-chip"><i class="icon la la-palette"></i><span>視覺設計</span></div>
+      <div class="skill-chip"><i class="icon la la-html5"></i><span>HTML/CSS</span></div>
+      <div class="skill-chip"><i class="icon la la-code"></i><span>前端設計</span></div>
+      <div class="skill-chip"><i class="icon la la-universal-access"></i><span>無障礙網頁</span></div>
+      <div class="skill-chip"><i class="icon la la-layer-group"></i><span>設計系統</span></div>
+      <div class="skill-chip"><i class="icon la la-object-group"></i><span>原型製作</span></div>
+      <div class="skill-chip"><i class="icon la la-user-friends"></i><span>使用者研究</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-section" id="about">
+  <div class="wrap about-grid reveal">
+    <div class="about-img-wrap">
+      <div class="about-img"><img src="assets/me.jpg" alt="CC Lee" /></div>
+      <div class="about-badge">
+        <span class="num">5+</span>
+        <span class="lbl">年設計經驗</span>
+      </div>
+    </div>
+    <div class="about-content">
+      <div class="section-kicker">About Me</div>
+      <h2>我是 <span class="grad-text">CC Lee</span></h2>
+      <p>一位橫跨設計與開發的創作者。喜歡從使用者的角度出發，把複雜的問題拆解成簡單直覺的介面。</p>
+      <p>過去專注於 UI/UX 設計與前端實作，熟悉從原型、視覺到上線的完整流程。相信好的設計不只是好看，更要能解決真實的問題。</p>
+      <p>工作之外，喜歡探索新的設計趨勢與工具，持續打磨自己的手感。</p>
+      <div class="about-tags">
+        <span class="about-tag">UI/UX 設計</span>
+        <span class="about-tag">Figma</span>
+        <span class="about-tag">React</span>
+        <span class="about-tag">設計系統</span>
+        <span class="about-tag">原型製作</span>
+        <span class="about-tag">使用者研究</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section class="portfolio-section" id="portfolio">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="section-kicker">Portfolio</div>
+      <h2 class="section-title">精選服務 & 作品</h2>
+      <p class="section-sub">從品牌網站到複雜系統，每個專案都全心投入。</p>
+    </div>
+    <div class="portfolio-grid reveal">
+      <div class="project-card">
+        <div class="card-thumb" style="background:linear-gradient(135deg,#6c63ff,#8b5cf6)"><span class="card-thumb-num">01</span></div>
+        <div class="card-body">
+          <span class="card-tag">企業形象</span>
+          <div class="card-title">企業網站諮詢</div>
+          <p class="card-desc">規劃企業品牌形象網站，從資訊架構、視覺設計到前端實作，打造專業可信賴的數位門面。</p>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="card-thumb" style="background:linear-gradient(135deg,#06b6d4,#3b82f6)"><span class="card-thumb-num">02</span></div>
+        <div class="card-body">
+          <span class="card-tag">個人品牌</span>
+          <div class="card-title">個人網站建置</div>
+          <p class="card-desc">打造獨一無二的個人品牌網站，展現你的作品、技能與個人特色，讓機會主動找上門。</p>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="card-thumb" style="background:linear-gradient(135deg,#f59e0b,#ef4444)"><span class="card-thumb-num">03</span></div>
+        <div class="card-body">
+          <span class="card-tag">電商</span>
+          <div class="card-title">購物網站開發</div>
+          <p class="card-desc">設計流暢的購物體驗，從商品瀏覽到結帳流程，優化轉換率，讓顧客買得開心。</p>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="card-thumb" style="background:linear-gradient(135deg,#10b981,#06b6d4)"><span class="card-thumb-num">04</span></div>
+        <div class="card-body">
+          <span class="card-tag">UX</span>
+          <div class="card-title">UI/UX 規劃</div>
+          <p class="card-desc">從用戶研究、資訊架構到互動原型，系統性地規劃產品體驗，解決真實使用問題。</p>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="card-thumb" style="background:linear-gradient(135deg,#8b5cf6,#ec4899)"><span class="card-thumb-num">05</span></div>
+        <div class="card-body">
+          <span class="card-tag">Landing Page</span>
+          <div class="card-title">一頁式網站</div>
+          <p class="card-desc">精準呈現品牌故事或產品賣點，視覺吸睛、結構清晰，快速建立第一印象。</p>
+        </div>
+      </div>
+      <div class="project-card">
+        <div class="card-thumb" style="background:linear-gradient(135deg,#6c63ff,#06b6d4)"><span class="card-thumb-num">06</span></div>
+        <div class="card-body">
+          <span class="card-tag">諮詢</span>
+          <div class="card-title">只是聊聊</div>
+          <p class="card-desc">有想法但還沒想清楚？歡迎先聊聊，一起梳理需求，找到最適合你的方向。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section reveal">
+  <div class="wrap">
+    <h2>一起做點<span class="grad-text">有趣的東西</span>吧</h2>
+    <p>有任何想法或合作機會，都歡迎跟我聊聊。我會盡快回覆你。</p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+      <a href="#contact" class="btn-primary" style="display:inline-block;">開始合作</a>
+      <a href="mailto:cc.lee972@gmail.com" class="btn-outline" style="display:inline-block;">直接寄信</a>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="wrap contact-grid reveal">
+    <div class="contact-info">
+      <div class="section-kicker">Contact</div>
+      <h2>聯絡我</h2>
+      <p>有專案、合作或只是想打聲招呼都歡迎，填寫表單，我會盡快回覆你。</p>
+      <div class="contact-detail">
+        <div class="icon">✉️</div>
+        <div class="txt"><strong>Email</strong>cc.lee972@gmail.com</div>
+      </div>
+      <div class="contact-detail">
+        <div class="icon">⌥</div>
+        <div class="txt"><strong>GitHub</strong>github.com/cclee972</div>
+      </div>
+      <div class="contact-detail">
+        <div class="icon">📍</div>
+        <div class="txt"><strong>位置</strong>Taiwan</div>
+      </div>
+    </div>
+
+    <form class="contact-form" id="contact-form" novalidate>
+      <!-- honeypot -->
+      <input id="cf-company" name="_gotcha" type="text" tabindex="-1" autocomplete="off" aria-hidden="true"
+             style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;opacity:0;" />
+      <div class="field">
+        <label for="cf-name">姓名</label>
+        <input id="cf-name" name="name" type="text" placeholder="你的名字" required />
+      </div>
+      <div class="field">
+        <label for="cf-email">Email</label>
+        <input id="cf-email" name="email" type="email" placeholder="you@example.com" required />
+      </div>
+      <div class="field">
+        <label for="cf-topic">想諮詢的內容</label>
+        <select id="cf-topic" name="topic" required>
+          <option value="" disabled selected>請選擇…</option>
+          <option>企業網站諮詢</option>
+          <option>個人網站建置</option>
+          <option>購物網站開發</option>
+          <option>UI/UX 規劃</option>
+          <option>一頁式網站</option>
+          <option>只是聊聊</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+      <div class="field hidden" id="topic-other-field">
+        <label for="cf-topic-other">請說明其他內容</label>
+        <input id="cf-topic-other" name="topic_other" type="text" placeholder="想諮詢的內容…" />
+      </div>
+      <div class="field">
+        <label for="cf-message">訊息</label>
+        <textarea id="cf-message" name="message" placeholder="想聊聊什麼呢？" required></textarea>
+      </div>
+      <button type="submit" class="btn-primary" style="width:100%;justify-content:center;border:none;padding:15px;">送出訊息</button>
+      <p class="form-status" id="form-status" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="footer-inner">
+      <div class="footer-logo">CC<span>.</span></div>
+      <div class="footer-links">
+        <a href="#about">關於</a>
+        <a href="#portfolio">作品</a>
+        <a href="#contact">聯絡</a>
+        <a href="mailto:cc.lee972@gmail.com">Email</a>
+      </div>
+    </div>
+    <p class="footer-copy">© <span id="year"></span> CC Lee · 用 ❤️ 打造</p>
+  </div>
+</footer>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  // Scroll header
+  const header = document.getElementById("site-header");
+  window.addEventListener("scroll", () => {
+    header.classList.toggle("scrolled", window.scrollY > 40);
+  });
+
+  // Scroll reveal
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+  // Topic dropdown
+  const topicSel = document.getElementById("cf-topic");
+  const otherField = document.getElementById("topic-other-field");
+  const otherInput = document.getElementById("cf-topic-other");
+  topicSel.addEventListener("change", () => {
+    const isOther = topicSel.value === "其他";
+    otherField.classList.toggle("hidden", !isOther);
+    if (isOther) otherInput.focus(); else otherInput.value = "";
+  });
+
+  // Contact form
+  const FORMSPREE_ENDPOINT = "https://formspree.io/f/mqeoklwq";
+  const MY_EMAIL = "cc.lee972@gmail.com";
+  const form = document.getElementById("contact-form");
+  const statusEl = document.getElementById("form-status");
+  function setStatus(msg, type) {
+    statusEl.textContent = msg;
+    statusEl.className = "form-status" + (type ? " " + type : "");
+  }
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const name    = document.getElementById("cf-name").value.trim();
+    const email   = document.getElementById("cf-email").value.trim();
+    const message = document.getElementById("cf-message").value.trim();
+    const trap    = document.getElementById("cf-company").value;
+
+    if (trap) { form.reset(); setStatus("訊息已送出，謝謝你！🎉","ok"); return; }
+    if (!name || !email || !message) { setStatus("請把姓名、Email 和訊息都填寫完整 🙏","err"); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/.test(email)) { setStatus("Email 格式好像怪怪的，再確認一下 ✉️","err"); return; }
+    if (message.length < 5) { setStatus("訊息再多寫一點點吧（至少 5 個字）🙂","err"); return; }
+    if (!topicSel.value) { setStatus("請選擇想諮詢的內容 🙏","err"); return; }
+    const topicOther = otherInput.value.trim();
+    if (topicSel.value === "其他" && !topicOther) { setStatus("請說明其他想諮詢的內容 🙂","err"); return; }
+    const topic = topicSel.value === "其他" ? ("其他：" + topicOther) : topicSel.value;
+
+    if (!FORMSPREE_ENDPOINT) {
+      const subject = encodeURIComponent("網站來信 — " + name + "（" + topic + "）");
+      const body = encodeURIComponent("姓名：" + name + "\nEmail：" + email + "\n諮詢內容：" + topic + "\n\n" + message);
+      window.location.href = "mailto:" + MY_EMAIL + "?subject=" + subject + "&body=" + body;
+      setStatus("已為你開啟郵件軟體 ✉️","ok"); return;
+    }
+
+    const btn = form.querySelector("button[type=submit]");
+    const orig = btn.textContent; btn.disabled = true; btn.textContent = "傳送中…"; setStatus("");
+    try {
+      const res = await fetch(FORMSPREE_ENDPOINT, { method:"POST", headers:{Accept:"application/json"}, body: new FormData(form) });
+      if (res.ok) { form.reset(); setStatus("訊息已送出，謝謝你！我會盡快回覆 🎉","ok"); }
+      else { setStatus("送出失敗了，請改用「直接寄信」聯絡我。","err"); }
+    } catch { setStatus("網路出了點狀況，請改用「直接寄信」聯絡我。","err"); }
+    finally { btn.disabled = false; btn.textContent = orig; }
+  });
+</script>
+</body>
+</html>
