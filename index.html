@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CC Lee — 請先登入</title>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -86,7 +87,12 @@
 </div>
 
 <script>
-  const WORKER = 'https://portfolio-auth.cc-lee972.workers.dev';
+  const WORKER        = 'https://portfolio-auth.cc-lee972.workers.dev';
+  const EMAILJS_KEY   = 'dv9nbeUX-hSd0zsIV';
+  const SERVICE_ID    = 'portfolio_otp';
+  const ADMIN_TMPL    = 'template_0jnlytu'; // 管理員通知信
+
+  emailjs.init(EMAILJS_KEY);
 
   if (sessionStorage.getItem('cc_auth') === 'ok') {
     window.location.replace('./portfolio.html');
@@ -130,6 +136,13 @@
       btn.disabled = false; btn.textContent = '申請存取';
       return;
     }
+
+    // 寄通知信給管理員
+    const now = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });
+    emailjs.send(SERVICE_ID, ADMIN_TMPL, {
+      client_email: email,
+      request_time: now
+    }).catch(() => {}); // 靜默失敗，不影響主流程
 
     currentEmail = email;
     document.getElementById('waiting-email').textContent = email;
