@@ -115,6 +115,11 @@
         document.getElementById('step-email').style.display = 'none';
         document.getElementById('step-waiting').style.display = 'block';
         startPolling();
+      } else {
+        // 連結已過期或被拒絕 → 顯示 alert 並回到申請頁
+        alert('此連結已過期或無效，請重新申請存取。');
+        // 清掉 URL 參數避免重整時重複觸發
+        history.replaceState(null, '', location.pathname);
       }
     } catch { /* 網路問題，保持預設畫面 */ }
   });
