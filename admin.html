@@ -48,7 +48,10 @@
 
 <!-- 管理區（登入後顯示）-->
 <div id="admin-section" style="display:none; max-width:600px; margin:0 auto;">
-  <h1>📋 Email 名單管理</h1>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h1>📋 Email 名單管理</h1>
+    <button onclick="doLogout()" style="background:#f3f4f6; border:1px solid #ddd; border-radius:6px; padding:6px 14px; cursor:pointer; font-size:.85rem; color:#555;">登出</button>
+  </div>
   <p style="color:#666; margin-bottom:20px; font-size:.9rem;">在這裡新增或刪除可以進入作品集的 Email。</p>
 
   <!-- 新增 Email -->
@@ -68,6 +71,7 @@
 
 <script>
   const WORKER = 'https://portfolio-auth.cc-lee972.workers.dev';
+  const STORAGE_KEY = 'cc_admin_key';
   let adminKey = '';
 
   function showMsg(id, text, type) {
@@ -76,24 +80,37 @@
     el.className = 'msg ' + type;
   }
 
-  async function doLogin() {
-    const key = document.getElementById('key-input').value.trim();
+  async function doLogin(key) {
+    key = key || document.getElementById('key-input').value.trim();
     if (!key) return;
 
-    // 驗證密鑰
     const res = await fetch(`${WORKER}/admin/list`, {
       headers: { 'X-Admin-Key': key }
     });
 
     if (res.ok) {
       adminKey = key;
+      localStorage.setItem(STORAGE_KEY, key); // 記住密鑰
       document.getElementById('login-section').style.display = 'none';
       document.getElementById('admin-section').style.display = 'block';
       loadEmails();
     } else {
+      localStorage.removeItem(STORAGE_KEY); // 密鑰錯誤清除
       showMsg('login-msg', '密鑰錯誤，請再試一次。', 'err');
     }
   }
+
+  // 登出
+  function doLogout() {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+
+  // 頁面載入時自動嘗試儲存的密鑰
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) doLogin(saved);
+  });
 
   async function loadEmails() {
     const res = await fetch(`${WORKER}/admin/list`, {
