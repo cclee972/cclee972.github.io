@@ -77,11 +77,6 @@
 <script>
   const WORKER      = 'https://portfolio-auth.cc-lee972.workers.dev';
   const STORAGE_KEY = 'cc_admin_key';
-  const EMAILJS_KEY = 'DW61OyjNjaPe7rpbV';
-  const SERVICE_ID  = 'portfolio_otp';
-  const TEMPLATE_ID = 'template_fozs3ag';
-
-  emailjs.init(EMAILJS_KEY);
 
   let adminKey = '';
   let pollTimer;
@@ -90,15 +85,6 @@
     const el = document.getElementById(id);
     el.textContent = text;
     el.className = 'msg ' + type;
-  }
-
-  async function sha256(str) {
-    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-  }
-
-  function genOTP() {
-    return String(Math.floor(100000 + Math.random() * 900000));
   }
 
   function timeAgo(ts) {
@@ -162,38 +148,25 @@
     const row = document.getElementById(`row-${btoa(email)}`);
     row.querySelector('td:nth-child(4)').innerHTML = '<span class="badge" style="background:#dbeafe;color:#1e40af">寄送中…</span>';
 
-    // 產生 OTP
-    const otp = genOTP();
-    const hash = await sha256(otp);
+    // Worker 負責產生 OTP 並寄信（Brevo）
+    const res = await fetch(`${WORKER}/admin/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
 
-    // 用 EmailJS 寄 OTP 給客戶
-    try {
-      await emailjs.send(SERVICE_ID, TEMPLATE_ID, {
-        to_email: email,
-        passcode: otp,
-        time: '10 分鐘',
-        site_url: 'https://cclee972.github.io'
-      });
-    } catch (e) {
+    if (!data.ok) {
       row.querySelector('td:nth-child(4)').innerHTML = '<span class="badge" style="background:#fee2e2;color:#991b1b">寄送失敗</span>';
       checkbox.disabled = false;
       checkbox.checked = false;
       return;
     }
 
-    // 通知 Worker 已核准
-    await fetch(`${WORKER}/admin/approve`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Key': adminKey },
-      body: JSON.stringify({ email, otp_hash: hash })
-    });
-
     row.querySelector('td:nth-child(4)').innerHTML = '<span class="badge badge-approved">✅ 已核准</span>';
     row.querySelector('td:nth-child(5)').innerHTML = '';
     row.querySelector('td:nth-child(1)').innerHTML = '✅';
     row.style.opacity = '0.6';
-
-    // 30 秒後從清單移除
     setTimeout(() => row.remove(), 30000);
   }
 
