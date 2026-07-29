@@ -8,6 +8,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      /* motion tokens */
+      --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+      --dur-fast: 160ms;
+      --dur:      200ms;
+    }
     *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
     html, body { height:100%; font-family:"Plus Jakarta Sans",system-ui,sans-serif; background:#0b0c1e; color:#f1f5f9; }
     body::before {
@@ -20,7 +26,11 @@
     .page { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; position:relative; z-index:1; }
     .logo { font-size:1.6rem; font-weight:800; letter-spacing:-.03em; margin-bottom:40px; color:#fff; }
     .logo span { color:#6c63ff; }
-    .card { width:100%; max-width:420px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); border-radius:24px; padding:40px 36px; backdrop-filter:blur(16px); box-shadow:0 24px 60px rgba(0,0,0,.4); }
+    .card { width:100%; max-width:420px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1); border-radius:24px; padding:40px 36px; backdrop-filter:blur(16px); box-shadow:0 24px 60px rgba(0,0,0,.4);
+      transition:opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out); }
+    /* step machine: .is-hidden removes the card, .is-entering is the pre-transition state */
+    .card.is-hidden { display:none; }
+    .card.is-entering { opacity:0; transform:translateY(6px); }
     .card-title { font-size:1.4rem; font-weight:700; margin-bottom:6px; }
     .card-sub { color:rgba(255,255,255,.45); font-size:.9rem; margin-bottom:28px; }
     label { display:block; font-size:.82rem; font-weight:600; color:rgba(255,255,255,.6); margin-bottom:8px; }
@@ -29,16 +39,29 @@
     input::placeholder { color:rgba(255,255,255,.25); }
     input:focus { border-color:#6c63ff; box-shadow:0 0 0 3px rgba(108,99,255,.2); }
     .error { display:none; background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3); color:#fca5a5; border-radius:10px; padding:11px 14px; font-size:.86rem; margin-bottom:16px; }
-    .error.show { display:block; }
-    .btn { width:100%; padding:14px; border-radius:12px; border:none; cursor:pointer; font:inherit; font-size:.98rem; font-weight:700; background:linear-gradient(135deg,#6c63ff,#06b6d4); color:#fff; box-shadow:0 6px 24px rgba(108,99,255,.45); transition:transform .2s, box-shadow .2s, opacity .2s; }
-    .btn:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(108,99,255,.55); }
+    .error.show { display:block; animation: err-in 150ms var(--ease-out); }
+    @keyframes err-in { from { opacity:0; transform:translateY(-4px); } }
+    .btn { width:100%; padding:14px; border-radius:12px; border:none; cursor:pointer; font:inherit; font-size:.98rem; font-weight:700; background:linear-gradient(135deg,#6c63ff,#06b6d4); color:#fff; box-shadow:0 6px 24px rgba(108,99,255,.45); transition:transform var(--dur) var(--ease-out), box-shadow var(--dur) var(--ease-out), opacity var(--dur) ease; }
+    @media (hover:hover) and (pointer:fine) {
+      .btn:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(108,99,255,.55); }
+    }
+    .btn:active { transform:scale(.97); transition-duration: var(--dur-fast); }
     .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
-    .waiting-icon { font-size:2.5rem; margin-bottom:16px; animation: spin 2s linear infinite; display:inline-block; }
+    .waiting-icon { font-size:2.5rem; margin-bottom:16px; animation: spin 1s linear infinite; display:inline-block; }
     @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
     .waiting-email { font-weight:700; color:#a5b4fc; word-break:break-all; }
     .back-link { display:block; text-align:center; margin-top:16px; color:rgba(255,255,255,.35); font-size:.85rem; cursor:pointer; }
     .back-link:hover { color:rgba(255,255,255,.65); }
     .footer-note { margin-top:32px; color:rgba(255,255,255,.2); font-size:.78rem; text-align:center; }
+
+    /* ── REDUCED MOTION ── */
+    @media (prefers-reduced-motion: reduce) {
+      .card, .card.is-entering { transform:none; transition:opacity var(--dur) ease; }
+      .btn:hover, .btn:active { transform:none; }
+      .error.show { animation:none; }
+      /* keep the spinner — it communicates "still working" — but make it gentler */
+      .waiting-icon { animation-duration: 2s; }
+    }
   </style>
 </head>
 <body>
@@ -58,7 +81,7 @@
   </div>
 
   <!-- Step 2: 等待核准 -->
-  <div class="card" id="step-waiting" style="display:none; text-align:center;">
+  <div class="card is-hidden" id="step-waiting" style="text-align:center;">
     <div class="waiting-icon">⏳</div>
     <div class="card-title">等待管理員核准</div>
     <div class="card-sub" style="margin-bottom:16px;">
@@ -70,7 +93,7 @@
   </div>
 
   <!-- Step 3: 輸入 OTP -->
-  <div class="card" id="step-otp" style="display:none;">
+  <div class="card is-hidden" id="step-otp">
     <div class="card-title">輸入驗證碼 ✉️</div>
     <div class="card-sub">驗證碼已寄到你的信箱，10 分鐘內有效</div>
     <div class="input-wrap">
@@ -94,6 +117,22 @@
   let currentEmail = '';
   let pollTimer = null;
 
+  const STEPS = ['step-email', 'step-waiting', 'step-otp'];
+
+  // Swap steps with a short fade+lift so the flow reads as one card advancing,
+  // not as three cards being replaced.
+  function showStep(id, focusId) {
+    STEPS.forEach(s => {
+      const el = document.getElementById(s);
+      if (s !== id) { el.classList.add('is-hidden'); return; }
+      el.classList.add('is-entering');
+      el.classList.remove('is-hidden');
+      // two frames: one to apply the pre-state, one to transition out of it
+      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.remove('is-entering')));
+    });
+    if (focusId) document.getElementById(focusId).focus();
+  }
+
   // 從 OTP 信件連結進來（?e=email）→ 自動跳到正確步驟
   window.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(location.search);
@@ -106,14 +145,11 @@
       const data = await res.json();
       if (data.status === 'approved') {
         // 直接顯示 OTP 輸入框
-        document.getElementById('step-email').style.display = 'none';
-        document.getElementById('step-otp').style.display = 'block';
-        document.getElementById('otp-input').focus();
+        showStep('step-otp', 'otp-input');
       } else if (data.status === 'pending') {
         // 顯示等待畫面並繼續 polling
         document.getElementById('waiting-email').textContent = currentEmail;
-        document.getElementById('step-email').style.display = 'none';
-        document.getElementById('step-waiting').style.display = 'block';
+        showStep('step-waiting');
         startPolling();
       } else {
         // 連結已過期或被拒絕 → 顯示 alert 並回到申請頁
@@ -162,8 +198,7 @@
 
     currentEmail = email;
     document.getElementById('waiting-email').textContent = email;
-    document.getElementById('step-email').style.display = 'none';
-    document.getElementById('step-waiting').style.display = 'block';
+    showStep('step-waiting');
     btn.disabled = false; btn.textContent = '申請存取';
     startPolling();
   }
@@ -176,9 +211,7 @@
         const data = await res.json();
         if (data.status === 'approved') {
           clearInterval(pollTimer);
-          document.getElementById('step-waiting').style.display = 'none';
-          document.getElementById('step-otp').style.display = 'block';
-          document.getElementById('otp-input').focus();
+          showStep('step-otp', 'otp-input');
         } else if (data.status === 'denied') {
           clearInterval(pollTimer);
           setErr('waiting-error', '❌ 申請未獲核准，如有疑問請聯絡 CC Lee。');
@@ -230,10 +263,7 @@
     setErr('waiting-error', '');
     setErr('otp-error', '');
     document.getElementById('otp-input').value = '';
-    document.getElementById('step-waiting').style.display = 'none';
-    document.getElementById('step-otp').style.display = 'none';
-    document.getElementById('step-email').style.display = 'block';
-    document.getElementById('email-input').focus();
+    showStep('step-email', 'email-input');
   }
 
   document.getElementById('email-input').addEventListener('keydown', e => { if (e.key === 'Enter') submitEmail(); });
